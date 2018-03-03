@@ -1,0 +1,27 @@
+{
+  "name": "paradise-env-cli",
+  "version": "0.0.0",
+  "description": "The CLI of Paradise Env",
+  "main": "index.js",
+  "dependencies": {
+    "typescript": "^2.7.2"
+  },
+  "scripts": {
+    "start": "tsc && node dist",
+    "tests": "nodemon -w src --ext ts --exec yarn run test",
+    "test": "nyc -r text -r lcov -e .ts -x \"**/*.spec.ts\" jasmine-ts --config=jasmine.json",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "dev": "nodemon -w src --ext ts --exec yarn run start"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^2.8.6",
+    "coveralls": "^3.0.0",
+    "jasmine": "^3.1.0",
+    "jasmine-spec-reporter": "^4.2.1",
+    "jasmine-ts": "^0.2.1",
+    "nodemon": "^1.17.1",
+    "nyc": "^11.4.1",
+    "typescript-eslint-parser": "^14.0.0"
+  },
+  "license": "Apache-2.0"
+}
