@@ -35,7 +35,7 @@ dev-station ~ # par-env create-project
  - Driver: ****************
    Keystore unlocked
    Updated Driver Password Manager file
-
+ 
  - Navigator: ****************
    Keystore unlocked
    Updated Navigator Password Manager file
@@ -57,6 +57,7 @@ new user's _Password Manager_ file after accepting the invitation in the _CLI To
 dev-station ~ # par-env invite-user
  
  Opening browser at:
+ 
   https://par-env.cloud.corop.com/session?token=D87AD72D-86B5-4262-9DB6-E42B225EB98B
  
  Login complete:
@@ -72,15 +73,15 @@ dev-station ~ # par-env invite-user
  Unlock your Keystores:
  - Member: ****************
    Keystore unlocked
-
+ 
  - Invited: ****************
    Keystore unlocked
    Updated Invited Password Manager file
  
  Invitation succesful
  
- 
- Earnest, Welcome To The Club!
+ Dear Earnest, 
+ Welcome To The Club!
   
 dev-station ~ # 
 
@@ -93,6 +94,7 @@ respective _Git Repositories_ and prompts for the individual access codes at the
 dev-station ~ # eval `par-env`
  
  Opening browser at:
+ 
   https://par-env.cloud.corop.com/session?token=D87AD72D-86B5-4262-9DB6-E42B225EB98B
  
  Login complete:
@@ -118,3 +120,31 @@ dev-station ~ # eval `par-env`
 The tool will have set the environment variables of eg. Maven Repository credentials, HTTP Proxy location and 
 credentials, SSH-keys to access git repositories and cloud jump hosts, etc based on the sum of the content of the
 _Password Manager_ files.
+
+## Password Manager file content
+
+The _CLI Tool_ uses pattern matching to identify entries of the _Password Manager_ file as either environment variables
+or files relative to the local user home directory.
+
+## Service Bakend
+
+The _Service Backend_ contains of a public _service_, a _database_ and one or more configured _IDPs_. The _service_
+is invoked by the _CLI Tool_ to retrieve the _Password Manager_ file and _Project_ membership. The user ID provided
+by the _IDP_ is associated with the location and credentials of the user provided _Git Repository_ and persisted in 
+the _database_ as well as individual users' _Project_ memberships.
+
+The _Service Backend_ does **not** store or process credentials required to open the actual _Password Manager_ files 
+of users and projects. This is only done offline by the _CLI Tool_.
+
+## Acceptance Criteria
+
+- heavy use of UTF-8 and escape codes for colors, emojis, etc in the terminal output of the CLI tool
+- sick minimalistic web interface for the browser stuff
+- encrypted storage of database content using secret shared between backend service instances
+- helm chart or cloud foundry manifest
+- Concourse CI
+- tests for the CLI
+- tests for the backend too
+- integration tests for the shell-fu magic
+- Digilab Github as IDP
+- Digilab Identity Kit as IDP
