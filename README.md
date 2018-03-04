@@ -126,7 +126,7 @@ _Password Manager_ files.
 The _CLI Tool_ uses pattern matching to identify entries of the _Password Manager_ file as either environment variables
 or files relative to the local user home directory.
 
-## Service Bakend
+## Service Backend
 
 The _Service Backend_ contains of a public _service_, a _database_ and one or more configured _IDPs_. The _service_
 is invoked by the _CLI Tool_ to retrieve the _Password Manager_ file and _Project_ membership. The user ID provided
