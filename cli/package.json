@@ -4,8 +4,11 @@
   "description": "The CLI of Paradise Env",
   "main": "index.js",
   "dependencies": {
+    "@types/request": "^2.47.0",
     "argon2": "^0.17.2",
     "kdbxweb": "^1.2.2",
+    "promptify": "^1.0.1",
+    "request": "^2.83.0",
     "typescript": "^2.7.2"
   },
   "scripts": {

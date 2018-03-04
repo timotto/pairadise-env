@@ -1,33 +1,37 @@
-import * as fs from 'fs';
-import {Kdbx, CryptoEngine, Credentials, ProtectedValue} from 'kdbxweb';
+const BACKEND = 'http://localhost:3001';
 
+import {Kdbx, CryptoEngine, Credentials, ProtectedValue} from 'kdbxweb';
 const {promisify} = require('util');
+import * as fs from 'fs';
+import * as request from 'request';
+import * as promptify from 'promptify';
 
 const fsReadFile = promisify(fs.readFile);
+const fsWriteFile = promisify(fs.writeFile);
+const requestGet = promisify(request.get);
+const requestPost = promisify(request.post);
 
 const argon2 = require('argon2');
 CryptoEngine.argon2 = argon2;
 
-const fatalError = error => {
-    console.error('fatal error', error);
-    process.exit(1);
-};
+const main = async () => {
 
+    const storedToken = await readToken();
+    const token = storedToken
+        ? storedToken
+        : await requestTokenOnline();
 
-if (process.argv.length < 2) fatalError('not enough arguments');
-
-process.argv.shift();
-process.argv.shift();
-
-const givenPassword = 'testtesttest';
-const givenFile = process.env.HOME + '/para-env-test.kdbx';
-
-const startup = async () => {
-    const cred = await new Credentials(ProtectedValue.fromString(givenPassword));
-    const keepassFileData = await fsReadFile(givenFile);
+    console.error('Downloading keystore');
+    const keepassFileData = await downloadKeystore(token);
+    const password = promptify('Keystore password', {char: '*'});
+    const cred = await  new Credentials(ProtectedValue.fromString(password));
     const db = await Kdbx.load(Uint8Array.from(keepassFileData).buffer, cred);
 
-    scanKdbxGroup(db).forEach(line => console.log(line));
+    const content = scanKdbxGroup(db).join('\n') + '\n';
+
+    await fsWriteFile(`${process.env.HOME}/.para-env.rc`, content);
+
+    console.log('source ~/.para-env.rc');
 };
 
 const scanKdbxGroup =
@@ -78,7 +82,54 @@ const subKey = key => key.split(':')[1];
 
 const replacePlaceholderInLine = (line, entry) =>
     line
-        .replace('{{.username}}', entry.fields.UserName)
-        .replace('{{.password}}', maybeDecodeKdbxPassword(entry.fields.Password));
+        .replace('{{.Username}}', entry.fields.UserName)
+        .replace('{{.Password}}', maybeDecodeKdbxPassword(entry.fields.Password));
 
-startup().catch(fatalError);
+const readToken = () => fsReadFile(`${process.env.HOME}/.para-env.token`)
+    .catch(() => undefined);
+
+const writeToken = token => fsWriteFile(`${process.env.HOME}/.para-env.token`, token);
+
+const deleteLocalToken = () => promisify(fs.unlink)(`${process.env.HOME}/.para-env.token`);
+
+const login = (username, password) =>
+    requestPost(`${BACKEND}/auth`, {json:{username: username, password: password}})
+        .then(response => {
+            if (response.statusCode !== 200) throw response.statusCode;
+            return response;
+        });
+
+const requestTokenOnline = (): Promise<string> => {
+    const username = promptify("Username");
+    const password = promptify("Password", {char: '*'});
+
+    return login(username, password)
+        .then(response => response.body)
+        .then(jsonBody => writeToken(jsonBody.token).then(() => jsonBody.token))
+        .catch(error => {
+            console.error(error);
+            return requestTokenOnline();
+        })
+};
+
+const downloadKeystore = token => requestGet(`${BACKEND}/keystore`,
+    {encoding:null,headers: {'authorization': `Bearer ${token}`}})
+        .then(response => {
+            if (response.statusCode !== 200) {
+                return deleteLocalToken()
+                    .then(() => requestTokenOnline())
+                    .then(token => downloadKeystore(token));
+            }
+            return response.body;
+        })
+    .then((data: Buffer) => {
+        console.log(`data.length=${data.length}`);
+        return fsWriteFile('fs', data).then(() => data);
+    });
+
+const fatalError = error => {
+    console.error('fatal error', error);
+    process.exit(1);
+};
+
+main().catch(fatalError);
