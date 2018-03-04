@@ -4,6 +4,8 @@
   "description": "The CLI of Paradise Env",
   "main": "index.js",
   "dependencies": {
+    "argon2": "^0.17.2",
+    "kdbxweb": "^1.2.2",
     "typescript": "^2.7.2"
   },
   "scripts": {
