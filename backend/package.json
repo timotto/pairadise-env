@@ -1,0 +1,34 @@
+{
+  "name": "paradise-env-backend",
+  "version": "0.0.0",
+  "description": "The Backend Service of Paradise Env",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "tsc && node dist",
+    "tests": "nodemon -w src --ext ts --exec yarn run test",
+    "test": "nyc -r text -r lcov -e .ts -x \"**/*.spec.ts\" jasmine-ts --config=jasmine.json",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "dev": "nodemon -w src --ext ts --exec yarn run start"
+  },
+  "devDependencies": {
+    "@types/express": "^4.11.1",
+    "@types/jasmine": "^2.8.6",
+    "@types/jsonwebtoken": "^7.2.5",
+    "@types/nodegit": "^0.18.5",
+    "coveralls": "^3.0.0",
+    "jasmine": "^3.1.0",
+    "jasmine-spec-reporter": "^4.2.1",
+    "jasmine-ts": "^0.2.1",
+    "nodemon": "^1.17.1",
+    "nyc": "^11.4.1",
+    "typescript-eslint-parser": "^14.0.0"
+  },
+  "dependencies": {
+    "express": "^4.16.2",
+    "jsonwebtoken": "^8.2.0",
+    "nodegit": "^0.21.0",
+    "rimraf": "^2.6.2",
+    "typescript": "^2.7.2"
+  }
+}
