@@ -32,12 +32,16 @@ const keystoreHandler = (req: Request, res: Response) => {
     if (token === undefined)
         return res.sendStatus(401);
 
+    const errorHandler = error => {
+        console.error(error);
+        res.sendStatus(500);
+    };
+
+    const responseHandler = data => res.send(data);
+
     getKeystore(database[token.username])
-        .then(keystore => res.send(keystore))
-        .catch(error => {
-            console.error(error);
-            res.sendStatus(500);
-        })
+        .then(responseHandler)
+        .catch(errorHandler)
 };
 
 const signupHandler = (req: Request, res: Response) => {
@@ -99,21 +103,21 @@ const getKeystore = user => {
     const options: Git.CloneOptions = {fetchOpts:{callbacks:{
         credentials: createUserCredentialCallback(user)}}};
 
+    const fileRead = () => fsReadFile(`${tempDir}/para-env.kdbx`);
+    const cleanup = (keystore?) => rimraf(tempDir).then(() => keystore);
+    const errorHandler = error => {
+        const errorForwarder = () => {throw error};
+        return cleanup()
+            .then(errorForwarder);
+    };
+
     return Git.Clone.clone(user.git, tempDir, options)
-        .then(() => fsReadFile(`${tempDir}/para-env.kdbx`))
-        .then(keystore =>
-            rimraf(tempDir).then(() => keystore))
-        .catch(error => {
-            console.error(error);
-            return rimraf(tempDir).then(() => {throw error});
-        })
+        .then(fileRead)
+        .then(cleanup)
+        .catch(errorHandler);
 };
 
-const createTemp = (): string => {
-    const tempDir = fs.mkdtempSync('para-env-git-');
-    console.log(`created temp dir: ${tempDir}`);
-    return tempDir;
-};
+const createTemp = (): string => fs.mkdtempSync('para-env-git-');
 
 const createUserCredentialCallback = user => user.git.startsWith('https://')
     ? () => Git.Cred.userpassPlaintextNew(
