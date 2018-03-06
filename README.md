@@ -1,13 +1,57 @@
-# Paradise Env
+# Pairadise Env
 
-_Paradise Env_ is a combination of a _CLI Tool_ and a _Service Backend_ connected an _IDP_ and _Git Repositories_ to
+_Pairadise Env_ is a combination of a _CLI Tool_ and a _Service Backend_ connected an _IDP_ and _Git Repositories_ to
 set up local development machine environments based on content managed with a _Password Manager_.
 
 The _CLI Tool_ sets up the local shell and system environment of a developer machine based on the content of _Password
-Manager_ files received from the _Service Backend_. The session is initiated by invoking the _CLI Tool_:
+Manager_ files received from the _Service Backend_. 
+
+## State of Development
+_This readme is the backlog of this project. Some parts already work as advertised, others are pure stories about how it
+should work. Please join if you'd like to see this thing live!_
+
+## Usage
+
+1. the user invokes the _CLI Tool_
+1. the _CLI Tool_ establishes a session with the _Service Backend_
+1. the _CLI Tool_ opens a browser to a landing page associated to the session with the _Service Backend_
+1. the user authenticates with the _Service Backend_
+1. the _Service Backend_ sends the user's keystore file to the _CLI Tool_
+1. the user unlocks the keystore within the _CLI Tool_
+1. the _CLI Tool_ scans the keystore for
+    - declared environment variables and stores them in ~/.para-env 
+    - declared files and stores them relative to ~/
+
+## Keystore format
+
+The _CLI Tool_ sets environment variables and creates files based on the contents of the _Password Manager_ file.
+
+Entries in the _Password Manager_ file need specific attributes to get picked up:
+
+- If an attributes has a key called "ENV" then the value is evaluated as gotpl with the values for {{ .Username }} and
+{{ .Password }} taken from the _Password Manager_ file entry with the result being written into the ~/.para-env file.
+- If an attribute has a key starting with "ENV:" then the value is also evaluated as gotpl and assigned to an 
+environment variable as declared in the attribute key after the ":" .
+- If an attribute has a key starting with "FILE:" then the file attachment of _Password Manager_ entry with a filename
+as specified in the attribute value is stored in a local file relative to ~/ as declared in the attribute key after the
+":" . 
+
+## Setup
+
+Put the following lines into your `~/.profile` file:
+```
+touch ~/.para-env
+source ~/.para-env
+```
+
+This causes the environment variables set through _Pairadise Env_ to be defined every time you open a new terminal.
+
+## User Tale
+
+The session is initiated by invoking the _CLI Tool_:
 
 ```bash
-dev-station ~ # eval `par-env`
+dev-station ~ # para-env
 ```
 
 The _CLI Tool_ establishes a connection with the _Service Backend_ and opens a browser prompting both developers to
@@ -22,7 +66,7 @@ Repository_ associated with this project are stored in the _Password Manager_ fi
 as in the _Service Backend_, making them the first _Project Members_:
 
 ```bash
-dev-station ~ # par-env create-project
+dev-station ~ # para-env create-project
  
  Project Setup:
  - Name: Product One
@@ -45,7 +89,7 @@ dev-station ~ # par-env create-project
  
  To switch to the new project run:
  
- par-env set-project product-one
+ para-env set-project product-one
  
 dev-station ~ # 
 ```
@@ -54,11 +98,11 @@ A _Project Member_ is able to invite other users to the project. The _CLI Tool_ 
 new user's _Password Manager_ file after accepting the invitation in the _CLI Tool_:
 
 ```bash
-dev-station ~ # par-env invite-user
+dev-station ~ # para-env invite-user
  
  Opening browser at:
  
-  https://par-env.cloud.corop.com/session?token=D87AD72D-86B5-4262-9DB6-E42B225EB98B
+  https://para-env.cloud.corop.com/session?token=D87AD72D-86B5-4262-9DB6-E42B225EB98B
  
  Login complete:
  - Project: Product One
@@ -91,11 +135,11 @@ Upon successful login, the _Service Backend_ loads the associated _Password Mana
 respective _Git Repositories_ and prompts for the individual access codes at the command prompt:
 
 ```bash
-dev-station ~ # eval `par-env`
+dev-station ~ # para-env
  
  Opening browser at:
  
-  https://par-env.cloud.corop.com/session?token=D87AD72D-86B5-4262-9DB6-E42B225EB98B
+  https://para-env.cloud.corop.com/session?token=D87AD72D-86B5-4262-9DB6-E42B225EB98B
  
  Login complete:
  - Project: Product One
@@ -113,7 +157,7 @@ dev-station ~ # eval `par-env`
  
  To switch driver and navigator run:
  
- par-env change-places
+ para-env change-places
 
 ```
 
@@ -146,5 +190,5 @@ of users and projects. This is only done offline by the _CLI Tool_.
 - tests for the CLI
 - tests for the backend too
 - integration tests for the shell-fu magic
-- Digilab Github as IDP
-- Digilab Identity Kit as IDP
+- Github as IDP
+- Some custom login as IDP
