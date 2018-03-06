@@ -14,10 +14,7 @@ const requestTokenOnline = backend =>
     Prompt("Username> ").then(username =>
         Prompt("Password> ", {replaceCharacter: '*'}).then(password =>
             login(backend, username, password)
-                .then(response => response.body)
-                .then(jsonBody =>
-                    writeToken(jsonBody.token).then(() =>
-                        jsonBody.token))
+                .then(tokenResponseHandler)
                 .catch(error => {
                     console.error(error);
                     return requestTokenOnline(backend);
@@ -25,10 +22,15 @@ const requestTokenOnline = backend =>
 
 const login = (backend, username, password) =>
     requestPost(`${backend}/auth`, {json:{username: username, password: password}})
-        .then(response => {
-            if (response.statusCode !== 200) throw response.statusCode;
-            return response;
-        });
+        .then(loginResponseHandler);
+
+const loginResponseHandler = response => {
+    if (response.statusCode !== 200) throw response.statusCode;
+    return response;
+};
+
+const tokenResponseHandler = response => writeToken(response.body.token).then(() =>
+    response.body.token);
 
 const writeToken = token => fsWriteFile(localTokenFilename, token);
 
